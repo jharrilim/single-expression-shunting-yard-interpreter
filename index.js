@@ -85,7 +85,7 @@ const compile = (
                     ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] / evalStack[evalStack.length - 1]]
                     : op === '^'
                       ? [...evalStack.slice(0, -2), Math.pow(evalStack[evalStack.length - 2], evalStack[evalStack.length - 1])]
-                      : [...evalStack, op]
+                      : [...evalStack, Number.parseFloat(op)]
             , [])[0]
           )
     )(
@@ -120,14 +120,19 @@ const compile = (
 
 
 if (require.main.filename === __filename) {
-  const testString = '3 + 4 x 2 / ( 1 - 5 ) ^ 2 ^ 3';
-  const expectedParseOutput = '3 4 2 x 1 5 - 2 3 ^ ^ / +'.split(' ');
-  const expectedOutput = 3 + ((4 * 2) / Math.pow(( 1 - 5 ), Math.pow(2, 3)));
-  const actual = compile(testString)([])([]);
-  console.log('input:');
-  console.log(testString);
-  console.log('actual:');
-  console.log(actual);
-  console.log('expected:');
-  console.log(expectedOutput);
+  if (process.argv.length > 2) {
+    console.log(compile(process.argv.slice(2).join(''))([])([]))
+  } else {
+    // node .
+    const testString = '3 + 4 x 2 / ( 1 - 5 ) ^ 2 ^ 3';
+    const expectedParseOutput = '3 4 2 x 1 5 - 2 3 ^ ^ / +'.split(' ');
+    const expectedOutput = 3 + ((4 * 2) / Math.pow(( 1 - 5 ), Math.pow(2, 3)));
+    const actual = compile(testString)([])([]);
+    console.log('input:');
+    console.log(testString);
+    console.log('actual:');
+    console.log(actual);
+    console.log('expected:');
+    console.log(expectedOutput);
+  }
 }

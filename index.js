@@ -33,9 +33,9 @@ const compile = (
                 ? /* operators */ (
                   opStack.length > 0
                     ? (
-                      thisTokenOp === '('
+                      thisTokenOp.operator === '('
                         ? compileWithTokens(out)([...opStack, thisToken])
-                        : thisTokenOp === ')'
+                        : thisTokenOp.operator === ')'
                           ? (
                             // When a ')' is found, pop every operator into the out stack until the first '(', but excluding '('
                             compileWithTokens([
@@ -63,7 +63,7 @@ const compile = (
                               )
                               : compileWithTokens(out)([...opStack, thisToken])
                           )(opTokens.find(op => op.operator === opStack[opStack.length - 1]))
-                    ) : compileWithTokens(out)(thisTokenOp.operator === '(' ? [thisTokenOp.operator] : []) // we have an operator token but there aren't any operators in the opStack
+                    ) : compileWithTokens(out)(thisTokenOp.operator) // we have an operator token but there aren't any operators in the opStack
                 )
                 : /* numbers */ (
                   compileWithTokens([...out, thisToken])(opStack)

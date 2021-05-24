@@ -1,0 +1,16 @@
+{
+  "name": "@jharrilim/single-expression-shunting-yard-calculator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "shunting-yard",
+    "calculator",
+    "single-expression"
+  ],
+  "author": "Joseph Harrison-Lim",
+  "license": "ISC"
+}

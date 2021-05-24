@@ -29,7 +29,7 @@ const compile = (
            */
           (compileWithTokens => thisToken =>
             (thisTokenOp =>
-              console.log(tokens[0], out, opStack) || thisTokenOp
+              thisTokenOp
                 ? /* operators */ (
                   opStack.length > 0
                     ? (
@@ -76,17 +76,17 @@ const compile = (
           : /* tokens.length === 0 && opStack.length === 0, eval */ (
             out.reduce((evalStack, op) =>
               op === '+'
-              ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] + evalStack[evalStack.length - 1]]
-              : op === '-'
-                ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] - evalStack[evalStack.length - 1]]
-                : op === 'x'
-                  ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] * evalStack[evalStack.length - 1]]
-                  : op === '/'
-                    ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] / evalStack[evalStack.length - 1]]
-                    : op === '^'
-                      ? [...evalStack.slice(0, -2), Math.pow(evalStack[evalStack.length - 2], evalStack[evalStack.length - 1])]
-                      : [...evalStack, Number.parseFloat(op)]
-            , [])[0]
+                ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] + evalStack[evalStack.length - 1]]
+                : op === '-'
+                  ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] - evalStack[evalStack.length - 1]]
+                  : op === 'x'
+                    ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] * evalStack[evalStack.length - 1]]
+                    : op === '/'
+                      ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] / evalStack[evalStack.length - 1]]
+                      : op === '^'
+                        ? [...evalStack.slice(0, -2), Math.pow(evalStack[evalStack.length - 2], evalStack[evalStack.length - 1])]
+                        : [...evalStack, Number.parseFloat(op)]
+              , [])[0]
           )
     )(
       /* lexer */
@@ -108,7 +108,7 @@ const compile = (
                   ]
           , [])
     )
-)(/* opTokens */ [
+)(/* opTokens */[
   { operator: '+', precedence: 2, associativity: 'l' },
   { operator: '-', precedence: 2, associativity: 'l' },
   { operator: 'x', precedence: 3, associativity: 'l' },
@@ -120,14 +120,17 @@ const compile = (
 
 
 if (require.main.filename === __filename) {
-  if (process.argv.length > 2) {
-    console.log(compile(process.argv.slice(2).join(''))([])([]))
-  } else {
+  const exec = args => compile(args)([])([]);
+  if (process.argv.length === 3) {
+    // node . '3 + 4 x 2 / ( 1 - 5 ) ^ 2 ^ 3'
+    console.log(exec(process.argv.slice(2).join('')));
+  }
+  else {
     // node .
     const testString = '3 + 4 x 2 / ( 1 - 5 ) ^ 2 ^ 3';
     const expectedParseOutput = '3 4 2 x 1 5 - 2 3 ^ ^ / +'.split(' ');
-    const expectedOutput = 3 + ((4 * 2) / Math.pow(( 1 - 5 ), Math.pow(2, 3)));
-    const actual = compile(testString)([])([]);
+    const expectedOutput = 3 + ((4 * 2) / Math.pow((1 - 5), Math.pow(2, 3)));
+    const actual = exec(testString);
     console.log('input:');
     console.log(testString);
     console.log('actual:');

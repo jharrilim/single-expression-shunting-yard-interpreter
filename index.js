@@ -73,9 +73,20 @@ const compile = (
         )
         : opStack.length > 0
           ? parse([])([...out, ...[].concat(opStack).reverse()])([])
-          : /* compile */ (
-            // TODO: just leaving this like this for now to test the parser
-            [...out, ...opStack]
+          : /* tokens.length === 0 && opStack.length === 0, eval */ (
+            out.reduce((evalStack, op) =>
+              op === '+'
+              ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] + evalStack[evalStack.length - 1]]
+              : op === '-'
+                ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] - evalStack[evalStack.length - 1]]
+                : op === 'x'
+                  ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] * evalStack[evalStack.length - 1]]
+                  : op === '/'
+                    ? [...evalStack.slice(0, -2), evalStack[evalStack.length - 2] / evalStack[evalStack.length - 1]]
+                    : op === '^'
+                      ? [...evalStack.slice(0, -2), Math.pow(evalStack[evalStack.length - 2], evalStack[evalStack.length - 1])]
+                      : [...evalStack, op]
+            , [])[0]
           )
     )(
       /* lexer */
@@ -111,11 +122,12 @@ const compile = (
 if (require.main.filename === __filename) {
   const testString = '3 + 4 x 2 / ( 1 - 5 ) ^ 2 ^ 3';
   const expectedParseOutput = '3 4 2 x 1 5 - 2 3 ^ ^ / +'.split(' ');
+  const expectedOutput = 3 + ((4 * 2) / Math.pow(( 1 - 5 ), Math.pow(2, 3)));
   const actual = compile(testString)([])([]);
   console.log('input:');
   console.log(testString);
   console.log('actual:');
   console.log(actual);
   console.log('expected:');
-  console.log(expectedParseOutput);
+  console.log(expectedOutput);
 }

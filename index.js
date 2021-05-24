@@ -29,7 +29,7 @@ const compile = (
            */
           (compileWithTokens => thisToken =>
             (thisTokenOp =>
-              thisTokenOp
+              console.log(tokens[0], out, opStack) || thisTokenOp
                 ? /* operators */ (
                   opStack.length > 0
                     ? (
@@ -48,23 +48,22 @@ const compile = (
                               opStack.slice(0, opStack.lastIndexOf('('))
                             )
                           )
-                          : (topToken => ( // thisTokenOp is neither '(' nor ')'
-                            (
-                              // operator at the top of the stack has higher precedence
-                              topToken.precedence > thisTokenOp.precedence
-                              // or the operator at the top of the operator stack has equal precedence and the token is left-associative
-                              || (topToken.precedence === thisTokenOp.precedence && thisTokenOp.associativity === 'l')
-                            )
-                            && topToken.operator !== '('
-                          )
-                            ? (
-                              // token is lower precedence or eq precedence and left associative,
-                              // so push all of the opStack into out, and put the token on the opStack
-                              compileWithTokens([...out, topToken.operator])(opStack.slice(0, -1))
-                            )
-                            : compileWithTokens(out)([...opStack, thisToken])
+                          : (topToken => // thisTokenOp is neither '(' nor ')' (topToken can be a '(' though)
+                            topToken.operator !== '('
+                              && (
+                                // operator at the top of the stack has higher precedence
+                                topToken.precedence > thisTokenOp.precedence
+                                // or the operator at the top of the operator stack has equal precedence and the token is left-associative
+                                || (topToken.precedence === thisTokenOp.precedence && thisTokenOp.associativity === 'l')
+                              )
+                              ? (
+                                // token is lower precedence or eq precedence and left associative,
+                                // so move the topToken on the opStack to out, but don't pop tokens yet
+                                parse(tokens)([...out, topToken.operator])(opStack.slice(0, -1))
+                              )
+                              : compileWithTokens(out)([...opStack, thisToken])
                           )(opTokens.find(op => op.operator === opStack[opStack.length - 1]))
-                    ) : compileWithTokens(out)([thisTokenOp.operator]) // we have an operator token but there aren't any operators in the opStack
+                    ) : compileWithTokens(out)(thisTokenOp.operator === '(' ? [thisTokenOp.operator] : []) // we have an operator token but there aren't any operators in the opStack
                 )
                 : /* numbers */ (
                   compileWithTokens([...out, thisToken])(opStack)
@@ -98,12 +97,12 @@ const compile = (
                   ]
           , [])
     )
-)([
+)(/* opTokens */ [
   { operator: '+', precedence: 2, associativity: 'l' },
   { operator: '-', precedence: 2, associativity: 'l' },
   { operator: 'x', precedence: 3, associativity: 'l' },
-  { operator: '^', precedence: 4, associativity: 'r' },
   { operator: '/', precedence: 3, associativity: 'l' },
+  { operator: '^', precedence: 4, associativity: 'r' },
   { operator: '(', precedence: 0, associativity: 'l' },
   { operator: ')', precedence: 0, associativity: 'l' },
 ]);
@@ -112,8 +111,11 @@ const compile = (
 if (require.main.filename === __filename) {
   const testString = '3 + 4 x 2 / ( 1 - 5 ) ^ 2 ^ 3';
   const expectedParseOutput = '3 4 2 x 1 5 - 2 3 ^ ^ / +'.split(' ');
+  const actual = compile(testString)([])([]);
+  console.log('input:');
+  console.log(testString);
   console.log('actual:');
-  console.log(compile(testString)([])([]));
+  console.log(actual);
   console.log('expected:');
   console.log(expectedParseOutput);
 }
